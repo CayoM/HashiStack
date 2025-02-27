@@ -1,3 +1,5 @@
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/CayoM/HashiStack/tree/01-static-web)
+
 # Einfacher Webserver (Initialer Zustand)
 Zu Beginn der Reise erstellen wir einen einfachen Webserver, der nur eine statische HTML-Seite anzeigt. Dies wird als Grundlage genutzt, um das Verständnis für die Architektur, Komponenten und Tooling darzustellen.
 
