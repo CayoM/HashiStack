@@ -17,7 +17,7 @@ Du baust einen einfachen Webserver, der eine statische HTML-Seite über Nginx od
 Die HTML-Seite wird mit Informationen über den Servertyp und die Version ausgestattet, um den Benutzer zu informieren.
 Ziel: Ein statischer Webserver, der grundlegende Infrastrukturinformationen anzeigt.
 
-## 2. Evolving to a 3-Tier Application (Nächster Schritt)
+## 2. Weiterentwicklung zu einer 3-Tier Applikation (Nächster Schritt)
 Der nächste Schritt in der Entwicklung ist die Erweiterung des einfachen Webservers zu einer 3-Tier-Anwendung. Hierbei wird die Webanwendung in drei Hauptkomponenten unterteilt:
 
 Frontend: Webserver, der die Benutzeroberfläche bereitstellt (z.B. HTML, CSS, JavaScript).
