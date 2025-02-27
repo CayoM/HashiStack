@@ -19,8 +19,7 @@
             }
         }
     },
-    "forwardPorts": [8080]
+    "forwardPorts": [8080],
 
-    // "onCreateCommand": "/bin/bash -c .devcontainer/on-create.sh",
-    // "postCreateCommand": "docker run -d --name webserver -p 8080:80 nginx"
+    "onCreateCommand": "/bin/bash -c .devcontainer/on-create.sh",
 }
