@@ -3,8 +3,8 @@
 ## Ziel
 In diesem Schritt wird die zuvor erstellte einfache Webserver-Applikation in eine **3-Tier-Architektur** umgebaut. Die neue Struktur besteht aus:
 
-1. **Frontend:** Ein Nginx-Webserver, der statische Dateien bereitstellt und API-Anfragen an das Backend weiterleitet.
-2. **Backend:** Eine API, die Anfragen verarbeitet und mit der Datenbank kommuniziert.
+1. **Frontend:** Ein Nginx-Webserver mit PHP, der API-Daten vom Backend anzeigt.
+2. **Backend:** Eine API in Python (Flask), die Anfragen verarbeitet und mit der Datenbank kommuniziert.
 3. **Datenbank:** Eine relationale Datenbank (PostgreSQL), die persistente Daten speichert.
 
 Zusätzlich werden **HashiCorp-Tools** integriert, um Infrastruktur und Service-Management zu automatisieren:
@@ -17,7 +17,15 @@ Zusätzlich werden **HashiCorp-Tools** integriert, um Infrastruktur und Service-
 ```
 +-------------+          +----------------+          +----------------+
 |  Frontend   | ----->  |    Backend     | ----->  |    Datenbank   |
-|  (Nginx)    |         | (Flask/Node.js)|         | (PostgreSQL)   |
+|  (Nginx+PHP)|         | (Flask API)    |         | (PostgreSQL)   |
++-------------+          +----------------+          +----------------+
+```
+
+Mit HashiCorp:
+```
++-------------+          +----------------+          +----------------+
+|  Frontend   | ----->  |    Backend     | ----->  |    Datenbank   |
+|  (Nginx+PHP)|         | (Flask API)    |         | (PostgreSQL)   |
 +-------------+          +----------------+          +----------------+
        |                        |                        |
        |                        |                        |
@@ -29,18 +37,20 @@ Zusätzlich werden **HashiCorp-Tools** integriert, um Infrastruktur und Service-
 
 ## Setup der Umgebung
 
-### 1. Frontend
-- Ein **Nginx-Container** wird erstellt, der statische Dateien ausliefert.
-- Konfiguriert, um Anfragen an das Backend weiterzuleiten.
+### 1. Frontend (Nginx + PHP)
+- Ein **Nginx-Container** wird erstellt, der statische Dateien ausliefert und API-Anfragen an das Backend stellt.
+- PHP-Skript (`index.php`) ruft Daten vom Backend ab und zeigt sie dynamisch an.
 - Zeigt dynamische Informationen über die laufenden Komponenten an (z. B. Version, Instanzen).
 
-### 2. Backend
-- Eine einfache API (Flask oder Node.js) verarbeitet Anfragen und gibt Daten zurück.
-- Kommuniziert mit der Datenbank über eine REST-Schnittstelle.
+### 2. Backend (Flask API)
+- Eine einfache API in **Python (Flask)** verarbeitet Anfragen und gibt Daten zurück.
+- Endpunkt `/status` liefert:
+  - Server-Informationen (z. B. Hostname, IP-Adresse, Laufzeit)
+  - Anzahl der Backend-Instanzen
 - Registriert sich automatisch in **Consul** für Service Discovery.
 - Liest geheime Zugangsdaten aus **Vault** (z. B. DB-Passwort).
 
-### 3. Datenbank
+### 3. Datenbank (PostgreSQL)
 - **PostgreSQL** wird als persistente Datenbank eingesetzt.
 - Terraform wird verwendet, um eine Datenbank-Instanz bereitzustellen.
 - Vault verwaltet sicher die Zugangsdaten.

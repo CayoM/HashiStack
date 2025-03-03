@@ -1,0 +1,25 @@
+{
+    "name": "HashiStack CodeSpace",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+        "docker-in-docker": "latest",
+        "terraform": "latest"
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+            ],
+            // Set container specific settings
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "files.trimTrailingWhitespace": true,
+                "files.trimFinalNewlines": true,
+                "files.insertFinalNewline": true
+            }
+        }
+    },
+    "forwardPorts": [8080],
+
+    "onCreateCommand": "/bin/bash -c .devcontainer/on-create.sh",
+}
