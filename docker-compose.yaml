@@ -16,7 +16,7 @@ services:
   backend:
     build: ./backend
     depends_on:
-      - db
+      - database
     ports:
       - "5000:5000"
     networks:
@@ -27,7 +27,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "80:80"
+      - "8080:80"
     networks:
       - hashi
 

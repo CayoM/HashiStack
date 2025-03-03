@@ -54,8 +54,8 @@ resource "docker_container" "database_container" {
   name  = "database"
   image = docker_image.database.name
   ports {
-    internal = 80
-    external = 8080
+    internal = 5432
+    external = 5432
   }
   env = ["POSTGRES_DB=mydb", "POSTGRES_USER=backend_user", "POSTGRES_PASSWORD=securepassword"]
 }
