@@ -1,19 +1,25 @@
 from flask import Flask, request, jsonify
 import psycopg2
 import os
+from dotenv import load_dotenv
 import subprocess
 
 app = Flask(__name__)
 
-DB_CONFIG = {
-    "dbname": "mydb",
-    "user": "backend_user",
-    "password": "securepassword",
-    "host": "database",
-}
+secrets_file = os.environ.get('SECRETS_FILE')
+if secrets_file:
+    load_dotenv(secrets_file)
+else:
+    load_dotenv('secrets.env')
 
 def get_db_connection():
-    return psycopg2.connect(**DB_CONFIG)
+    return psycopg2.connect(
+        host=os.environ.get('DB_HOST'),
+        port=os.environ.get('DB_PORT'),
+        dbname=os.environ.get('DB_NAME'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASSWORD')
+    )
 
 def get_api_token():
     conn = get_db_connection()
