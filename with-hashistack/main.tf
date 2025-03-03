@@ -33,6 +33,11 @@ resource "docker_container" "backend_container" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
+
+  volumes {
+    volume_name      = "shared-credentials"
+    container_path = "/shared-credentials"
+  }
 }
 
 resource "docker_image" "frontend" {
@@ -55,13 +60,9 @@ resource "docker_container" "frontend_container" {
   }
 }
 
-resource "docker_image" "database" {
-  name = "postgres:latest"
-}
-
 resource "docker_container" "database_container" {
   name  = "database"
-  image = docker_image.database.name
+  image = "postgres:latest"
   ports {
     internal = 5432
     external = 5432
@@ -81,4 +82,82 @@ resource "docker_container" "database_container" {
     container_path = "/docker-entrypoint-initdb.d/init.sql"
     read_only      = true
   }
+}
+
+# Vault container definition
+resource "docker_container" "vault_server" {
+  name  = "vault"
+  image = "vault:1.13.3"
+  restart = "always"
+  entrypoint = ["/bin/sh", "/init-vault.sh"]
+
+  capabilities {
+    add = ["IPC_LOCK"]
+  }
+
+  ports {
+    internal = 8200
+    external = 8200
+  }
+  ports {
+    internal = 8201
+    external = 8201
+  }
+
+  networks_advanced {
+    name = docker_network.hashi_network.name
+  }
+
+  env = [
+    "VAULT_DEV_ROOT_TOKEN_ID=hashistack-token",
+    "VAULT_ADDR=http://localhost:8200"
+  ]
+
+  volumes {
+    host_path      = "/workspaces/HashiStack/with-hashistack/vault-server.sh"
+    container_path = "/init-vault.sh"
+  }
+
+  volumes {
+    volume_name      = "vault-data"
+    container_path = "/vault/file"
+  }
+}
+
+
+resource "docker_container" "vault_client" {
+  name  = "vault_client"
+  image = "vault:1.13.3"
+  depends_on = [docker_container.vault_server]
+  entrypoint = ["/bin/sh", "/vault-client.sh"]
+  restart = "always"
+
+  networks_advanced {
+    name = docker_network.hashi_network.name
+  }
+
+  env = [
+    "VAULT_TOKEN=hashistack-token",
+    "VAULT_ADDR=http://vault:8200"
+  ]
+
+  # Volume mounten
+  volumes {
+    host_path      = "/workspaces/HashiStack/with-hashistack/vault-client.sh"
+    container_path = "/vault-client.sh"
+  }
+
+  volumes {
+    volume_name      = "shared-credentials"
+    container_path = "/shared-credentials"
+  }
+}
+
+# Volumes to share credentials between containers
+resource "docker_volume" "vault_data" {
+  name = "vault-data"
+}
+
+resource "docker_volume" "shared_credentials" {
+  name = "shared-credentials"
 }
