@@ -11,6 +11,9 @@ provider "docker" {
   host = "unix:///var/run/docker.sock"
 }
 
+resource "docker_network" "hashi_network" {
+  name = "hashi"
+}
 
 resource "docker_image" "backend" {
   name         = "backend:latest"
@@ -26,6 +29,9 @@ resource "docker_container" "backend_container" {
   ports {
     internal = 5000
     external = 5000
+  }
+  networks_advanced {
+    name = docker_network.hashi_network.name
   }
 }
 
@@ -44,6 +50,9 @@ resource "docker_container" "frontend_container" {
     internal = 80
     external = 8080
   }
+  networks_advanced {
+    name = docker_network.hashi_network.name
+  }
 }
 
 resource "docker_image" "database" {
@@ -57,5 +66,19 @@ resource "docker_container" "database_container" {
     internal = 5432
     external = 5432
   }
-  env = ["POSTGRES_DB=mydb", "POSTGRES_USER=backend_user", "POSTGRES_PASSWORD=securepassword"]
+  networks_advanced {
+    name = docker_network.hashi_network.name
+  }
+  # Umgebungsvariablen für PostgreSQL
+  env = [
+    "POSTGRES_DB=mydb",
+    "POSTGRES_USER=backend_user",
+    "POSTGRES_PASSWORD=securepassword"
+  ]
+  # Volume mounten
+  volumes {
+    host_path      = "/workspaces/HashiStack/database/setup.sql"
+    container_path = "/docker-entrypoint-initdb.d/init.sql"
+    read_only      = true
+  }
 }
