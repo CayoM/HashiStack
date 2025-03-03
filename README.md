@@ -1,3 +1,5 @@
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/CayoM/HashiStack/tree/02-weiter-entwicklung-3tier)
+
 # Weiterentwicklung zu einer 3-Tier Applikation
 
 ## Ziel
