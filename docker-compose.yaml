@@ -10,6 +10,8 @@ services:
       - ./database/setup.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+    networks:
+      - hashi
 
   backend:
     build: ./backend
@@ -17,6 +19,8 @@ services:
       - db
     ports:
       - "5000:5000"
+    networks:
+      - hashi
 
   frontend:
     build: ./frontend
@@ -24,3 +28,10 @@ services:
       - backend
     ports:
       - "80:80"
+    networks:
+      - hashi
+
+networks:
+  hashi:
+    name: hashi
+    external: true
