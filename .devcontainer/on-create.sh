@@ -1,8 +1,8 @@
 docker build -t frontend frontend/
-docker run -d --name webserver -p 8080:80 frontend
+docker run -d --name frontend -p 8080:80 frontend
 
 docker build -t backend backend/
-docker run -d --name webserver -p 5000:5000 backend
+docker run -d --name backend -p 5000:5000 backend
 
 docker run -d --name database -p 5432:5432 -v ./database/setup.sql:/docker-entrypoint-initdb.d/init.sql -e POSTGRES_DB='mydb' -e POSTGRES_USER='backend_user' -e POSTGRES_PASSWORD='securepassword' postgres:latest
 
