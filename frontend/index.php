@@ -70,7 +70,7 @@ $data = json_decode($response, true);
         </tr>
         <tr>
             <td>BackEnd</td>
-            <td><?php echo $data["server"] . " - " . $data["backend_version"]; ?></td>
+            <td><?php echo $data["server"] . "/" . $data["backend_version"]; ?></td>
             <td><?php echo 1; ?></td>
         </tr>
         <tr>
