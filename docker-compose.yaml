@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   database:
+    container_name: database
     image: postgres:latest
     environment:
       POSTGRES_DB: mydb
@@ -14,6 +15,7 @@ services:
       - hashi
 
   backend:
+    container_name: backend
     build: ./backend
     depends_on:
       - database
@@ -23,6 +25,7 @@ services:
       - hashi
 
   frontend:
+    container_name: frontend
     build: ./frontend
     depends_on:
       - backend
