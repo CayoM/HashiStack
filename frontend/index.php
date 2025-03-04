@@ -23,7 +23,6 @@ $response = file_get_contents($backend_url_status, false, $context);
 $data = json_decode($response, true);
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,57 +74,33 @@ $data = json_decode($response, true);
         </tr>
         <tr>
             <td>Database</td>
-            <td><?php print_r($data["database"]["version"]); ?></td>
+            <td><?php echo $data["database"]["version"]; ?></td>
             <td><?php echo 1; ?></td>
         </tr>
     </table>
-</body>
-</html>
 
-
-
-
-
-<!-- <?php
-$backend_url_status = "http://backend:5000/status";
-$api_token = "my-secret-token"; // Token aus der Datenbank
-
-$options = [
-    "http" => [
-        "header" => "Authorization: $api_token\r\n"
-    ]
-];
-
-$context = stream_context_create($options);
-$response = file_get_contents($backend_url_status, false, $context);
-$data = json_decode($response, true);
-?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>3-Tier App</title>
-</head>
-<body>
-    <h1>Systemstatus</h1>
-
-    <?php if (isset($data["error"])): ?>
-        <p style="color: red;"><?php echo $data["error"]; ?></p>
-    <?php else: ?>
-        <table border="1">
+    <?php
+    // Überprüfen, ob die Datenbankverbindung erfolgreich war, bevor die zweite Tabelle angezeigt wird
+    if (isset($data["database"]["user"]) && isset($data["database"]["password"])) {
+        // Datenbank-Verbindungsdetails anzeigen
+    ?>
+        <h2 style="text-align: center;">Database Connection Details</h2>
+        <table>
             <tr>
-                <th>Komponente</th>
-                <th>Status</th>
+                <th>Component</th>
+                <th>Value</th>
             </tr>
             <tr>
-                <td>Server</td>
-                <td><?php echo $data["server"] ?? "Unbekannt"; ?></td>
+                <td>User</td>
+                <td><?php echo $data["database"]["user"]; ?></td>
             </tr>
             <tr>
-                <td>Nginx Version</td>
-                <td><?php echo $data["nginx_version"] ?? "Nicht verfügbar"; ?></td>
+                <td>Password</td>
+                <td><?php echo $data["database"]["password"]; ?></td>
             </tr>
         </table>
-    <?php endif; ?>
+    <?php
+    }
+    ?>
 </body>
-</html> -->
+</html>

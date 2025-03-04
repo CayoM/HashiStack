@@ -34,6 +34,10 @@ resource "docker_container" "backend_container" {
     name = docker_network.hashi_network.name
   }
 
+  env = [
+    "SECRETS_FILE=/shared-credentials/.env"
+  ]
+
   volumes {
     volume_name      = "shared-credentials"
     container_path = "/shared-credentials"
