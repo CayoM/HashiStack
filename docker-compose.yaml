@@ -34,4 +34,3 @@ services:
 networks:
   hashi:
     name: hashi
-    external: true
