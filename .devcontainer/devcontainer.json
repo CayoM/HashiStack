@@ -18,8 +18,5 @@
                 "files.insertFinalNewline": true
             }
         }
-    },
-    "forwardPorts": [8080],
-
-    "onCreateCommand": "/bin/bash -c .devcontainer/on-create.sh",
+    }
 }
