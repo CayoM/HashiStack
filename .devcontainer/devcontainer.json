@@ -18,5 +18,17 @@
                 "files.insertFinalNewline": true
             }
         }
+    },
+    "forwardPorts": [80, 8500, 8200],
+    "portsAttributes": {
+        "80": {
+            "label": "HashiStack App"
+        },
+        "8500": {
+            "label": "Consul UI"
+        },
+        "8200": {
+            "label": "Vault UI"
+        }
     }
 }

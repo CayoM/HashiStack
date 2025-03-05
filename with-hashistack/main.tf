@@ -30,12 +30,22 @@ resource "docker_container" "backend_container" {
     internal = 5000
     external = 5000
   }
+  ports {
+    internal = 8300
+  }
+  ports {
+    internal = 8301
+  }
+  ports {
+    internal = 8600
+  }
   networks_advanced {
     name = docker_network.hashi_network.name
   }
 
   env = [
-    "SECRETS_FILE=/shared-credentials/.env"
+    "SECRETS_FILE=/shared-credentials/.env",
+    "CONSUL_HTTP_ADDR=http://consul:8500"
   ]
 
   volumes {
@@ -57,7 +67,7 @@ resource "docker_container" "frontend_container" {
   image = docker_image.frontend.name
   ports {
     internal = 80
-    external = 8080
+    external = 80
   }
   networks_advanced {
     name = docker_network.hashi_network.name
@@ -160,7 +170,7 @@ resource "docker_container" "vault_client" {
 # Consul container definition
 resource "docker_container" "consul_server" {
   name  = "consul"
-  image = "consul:latest"
+  image = "consul:1.15"
   restart = "always"
 
   capabilities {
