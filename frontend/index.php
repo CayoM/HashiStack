@@ -87,10 +87,6 @@ $data = json_decode($response, true);
         <h2 style="text-align: center;">Database Connection Details</h2>
         <table>
             <tr>
-                <th>Component</th>
-                <th>Value</th>
-            </tr>
-            <tr>
                 <td>User</td>
                 <td><?php echo $data["database"]["user"]; ?></td>
             </tr>
@@ -102,5 +98,52 @@ $data = json_decode($response, true);
     <?php
     }
     ?>
+
+<?php
+// Beispiel: $data['consul']['nodes'] und $data['consul']['services'] sind die aus dem Backend erhaltenen Daten.
+
+if (isset($data['consul']['nodes']) && is_array($data['consul']['nodes'])) {
+    echo '<h2 style="text-align: center;">Consul Nodes</h2>';
+    echo '<table>';
+    echo '<tr><th>Node</th><th>Address</th><th>Status</th><th>Tags</th></tr>';
+
+    foreach ($data['consul']['nodes'] as $node) {
+        // Hier sicherstellen, dass der Schlüssel vorhanden ist, bevor wir auf ihn zugreifen
+        $node_id = isset($node['ID']) ? htmlspecialchars($node['ID']) : 'N/A';
+        $node_address = isset($node['Address']) ? htmlspecialchars($node['Address']) : 'N/A';
+        $node_status = isset($node['Status']) ? htmlspecialchars($node['Status']) : 'N/A';
+        $node_tags = isset($node['Tags']) ? implode(', ', (array)$node['Tags']) : 'N/A';
+
+        echo "<tr>";
+        echo "<td>" . $node_id . "</td>";
+        echo "<td>" . $node_address . "</td>";
+        echo "<td>" . $node_status . "</td>";
+        echo "<td>" . $node_tags . "</td>";
+        echo "</tr>";
+    }
+    echo '</table>';
+} else {
+    echo "<p>No nodes found</p>";
+}
+
+if (isset($data['consul']['services']) && is_array($data['consul']['services'])) {
+    echo '<h2 style="text-align: center;">Consul Services</h2>';
+    echo '<table>';
+    echo '<tr><th>Service</th><th>Tags</th></tr>';
+
+    foreach ($data['consul']['services'] as $service => $tags) {
+        // Stelle sicher, dass $tags ein Array ist
+        $tags_list = is_array($tags) ? implode(', ', $tags) : 'N/A';
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($service) . "</td>";
+        echo "<td>" . $tags_list . "</td>";
+        echo "</tr>";
+    }
+    echo '</table>';
+} else {
+    echo "<p>No services found</p>";
+}
+?>
+
 </body>
 </html>

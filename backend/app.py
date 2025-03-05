@@ -3,13 +3,12 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 import subprocess
+import json
 
 app = Flask(__name__)
 
 def load_secrets(secrets_file=None):
-    # Stelle sicher, dass das SECRETS_FILE geladen wird, falls angegeben.
     if secrets_file:
-        # Lege sicher, dass wir den Inhalt neu laden, um frische Daten zu erhalten
         print(f"Lade Secrets aus: {secrets_file}")
         load_dotenv(secrets_file, override=True)  # 'override=True' stellt sicher, dass Variablen überschrieben werden
     else:
@@ -84,7 +83,6 @@ def get_db_connection():
             print(f"Fehler bei der Verbindung mit der Standard 'secrets.env': {e}")
             raise  # Fehler weitergeben, um die Anwendung zu stoppen
 
-
 def get_api_token():
     # Holt sich die API-Token von der DB, falls erforderlich
     conn, _, _ = get_db_connection()  # Wir holen uns nur die Verbindung
@@ -116,6 +114,58 @@ def check_db_status():
             "message": str(e)
         }
 
+def parse_consul_nodes_output(output):
+    # Parst die Konsul-Ausgabe für Nodes und gibt die Daten in einem strukturierten Format zurück
+    lines = output.splitlines()
+    nodes = []
+    for line in lines:
+        parts = line.split()
+        if len(parts) >= 4:  # Sicherstellen, dass alle relevanten Informationen vorhanden sind
+            node = {
+                "Node": parts[0],  # Node ID
+                "ID": parts[1],    # Node's unique ID
+                "Address": parts[2],  # Node's IP address
+                "DC": parts[3]     # Data Center
+            }
+            nodes.append(node)
+    return nodes
+
+def parse_consul_services_output(output):
+    # Parst die Konsul-Ausgabe für Services und gibt die Daten in einem strukturierten Format zurück
+    lines = output.splitlines()
+    services = []
+    for line in lines:
+        service = line.strip()
+        if service:
+            services.append(service)
+    return services
+
+def get_consul_nodes():
+    # Führe den Konsul-Befehl aus und hole die Nodes im Standardformat
+    command = ["consul", "catalog", "nodes", "-http-addr=http://consul:8500"]
+
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        nodes_output = result.stdout  # Konsul-Ausgabe als Text
+        nodes = parse_consul_nodes_output(nodes_output)  # Extrahiere die relevanten Nodes
+        return nodes
+    except subprocess.CalledProcessError as e:
+        print(f"Error while fetching Consul nodes: {e}")
+        return []
+
+def get_consul_services():
+    # Führe den Konsul-Befehl aus und hole die Services im Standardformat
+    command = ["consul", "catalog", "services", "-http-addr=http://consul:8500"]
+
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        services_output = result.stdout  # Konsul-Ausgabe als Text
+        services = parse_consul_services_output(services_output)  # Extrahiere die relevanten Services
+        return services
+    except subprocess.CalledProcessError as e:
+        print(f"Error while fetching Consul services: {e}")
+        return []
+
 @app.route('/status', methods=['GET'])
 def status():
     expected_token = get_api_token()
@@ -127,12 +177,20 @@ def status():
     # DB-Status abrufen
     db_status = check_db_status()
 
+    # Consul Nodes und Services abrufen
+    consul_nodes = get_consul_nodes()
+    consul_services = get_consul_services()
+
     # Systeminformationen abrufen
     server_info = {
         "server": "Flask API",
         "status": "running",
         "backend_version": subprocess.getoutput("python3 --version 2>&1").split(":")[-1].strip(),
-        "database": db_status
+        "database": db_status,
+        "consul": {
+            "nodes": consul_nodes,
+            "services": consul_services
+        }
     }
     return jsonify(server_info)
 
