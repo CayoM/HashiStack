@@ -157,6 +157,46 @@ resource "docker_container" "vault_client" {
   }
 }
 
+# Consul container definition
+resource "docker_container" "consul_server" {
+  name  = "consul"
+  image = "consul:latest"
+  restart = "always"
+
+  capabilities {
+    add = ["IPC_LOCK"]
+  }
+
+  ports {
+    internal = 8300
+    external = 8300
+  }
+  ports {
+    internal = 8301
+    external = 8301
+  }
+  ports {
+    internal = 8302
+    external = 8302
+  }
+  ports {
+    internal = 8500
+    external = 8500
+  }
+  ports {
+    internal = 8600
+    external = 8600
+  }
+
+  networks_advanced {
+    name = docker_network.hashi_network.name
+  }
+
+  env = [
+    "CONSUL_BIND_INTERFACE=eth0"
+  ]
+}
+
 # Volumes to share credentials between containers
 resource "docker_volume" "vault_data" {
   name = "vault-data"
