@@ -1,4 +1,4 @@
-
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/CayoM/HashiStack/tree/03-skalierung)
 
 # Skalierung der Anwendung (Scaling)
 
