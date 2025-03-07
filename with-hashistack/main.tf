@@ -24,11 +24,12 @@ resource "docker_image" "backend" {
 }
 
 resource "docker_container" "backend_container" {
-  name  = "backend"
+  count = 3
+
+  name  = "backend-${count.index}"  # This will create unique container names like "backend-0", "backend-1", etc.
   image = docker_image.backend.name
   ports {
     internal = 5000
-    external = 5000
   }
   ports {
     internal = 8300
@@ -44,15 +45,17 @@ resource "docker_container" "backend_container" {
   }
 
   env = [
+    "CONSUL_NODE_NAME=backend-${count.index}",  # Unique node name for each instance
     "SECRETS_FILE=/shared-credentials/.env",
     "CONSUL_HTTP_ADDR=http://consul:8500"
   ]
 
   volumes {
     volume_name      = "shared-credentials"
-    container_path = "/shared-credentials"
+    container_path   = "/shared-credentials"
   }
 }
+
 
 resource "docker_image" "frontend" {
   name         = "frontend:latest"
@@ -72,6 +75,9 @@ resource "docker_container" "frontend_container" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
+  env = [
+    "BACKEND_URL=http://backend.service.consul:5000/status"
+  ]
 }
 
 resource "docker_container" "database_container" {
@@ -79,7 +85,6 @@ resource "docker_container" "database_container" {
   image = "postgres:latest"
   ports {
     internal = 5432
-    external = 5432
   }
   networks_advanced {
     name = docker_network.hashi_network.name

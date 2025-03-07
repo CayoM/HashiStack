@@ -115,56 +115,75 @@ def check_db_status():
         }
 
 def parse_consul_nodes_output(output):
-    # Parst die Konsul-Ausgabe für Nodes und gibt die Daten in einem strukturierten Format zurück
+    # Split the output into lines
     lines = output.splitlines()
+
+    # Skip the first line (header) and process the remaining lines
     nodes = []
-    for line in lines:
+    for line in lines[1:]:  # Skip the first line (header)
         parts = line.split()
-        if len(parts) >= 4:  # Sicherstellen, dass alle relevanten Informationen vorhanden sind
+        if len(parts) >= 4:  # Ensure we have at least 4 parts (Node, ID, Address, DC)
             node = {
-                "Node": parts[0],  # Node ID
-                "ID": parts[1],    # Node's unique ID
+                "Node": parts[0],   # Node ID
+                "ID": parts[1],     # Node's unique ID
                 "Address": parts[2],  # Node's IP address
-                "DC": parts[3]     # Data Center
+                "DC": parts[3],     # Data Center
+                "Status": "unknown",  # Default value for Status
+                "Tags": []            # Default to empty list for Tags
             }
+            # You might need to modify the node parsing logic here to extract additional fields like 'Status' or 'Tags'
             nodes.append(node)
+
     return nodes
 
-def parse_consul_services_output(output):
-    # Parst die Konsul-Ausgabe für Services und gibt die Daten in einem strukturierten Format zurück
-    lines = output.splitlines()
-    services = []
-    for line in lines:
-        service = line.strip()
-        if service:
-            services.append(service)
-    return services
 
 def get_consul_nodes():
     # Führe den Konsul-Befehl aus und hole die Nodes im Standardformat
-    command = ["consul", "catalog", "nodes", "-http-addr=http://consul:8500"]
+    command = ["consul", "members", "-http-addr=http://consul:8500"]
 
     try:
         result = subprocess.run(command, capture_output=True, text=True, check=True)
         nodes_output = result.stdout  # Konsul-Ausgabe als Text
+        print("Consul Nodes Output: ", nodes_output)  # Debugging output
         nodes = parse_consul_nodes_output(nodes_output)  # Extrahiere die relevanten Nodes
         return nodes
     except subprocess.CalledProcessError as e:
         print(f"Error while fetching Consul nodes: {e}")
+        print(f"stderr: {e.stderr}")  # Capture the error message
         return []
+
+
+def parse_consul_services_output(output):
+    lines = output.splitlines()
+    services = []
+
+    for line in lines:
+        service_info = line.strip()
+        if service_info:
+            service_name = service_info.split()[0]  # Assuming the service is the first word in the line
+            tags = []  # Extract tags if available
+            services.append({
+                "Service": service_name,
+                "Tags": tags
+            })
+    return services
+
 
 def get_consul_services():
     # Führe den Konsul-Befehl aus und hole die Services im Standardformat
-    command = ["consul", "catalog", "services", "-http-addr=http://consul:8500"]
+    command = ["consul", "catalog", "services", "-tags", "-http-addr=http://consul:8500"]
 
     try:
         result = subprocess.run(command, capture_output=True, text=True, check=True)
         services_output = result.stdout  # Konsul-Ausgabe als Text
+        print("Consul Services Output: ", services_output)  # Debugging output
         services = parse_consul_services_output(services_output)  # Extrahiere die relevanten Services
         return services
     except subprocess.CalledProcessError as e:
         print(f"Error while fetching Consul services: {e}")
+        print(f"stderr: {e.stderr}")  # Capture the error message
         return []
+
 
 @app.route('/status', methods=['GET'])
 def status():

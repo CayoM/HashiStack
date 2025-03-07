@@ -9,7 +9,7 @@ $app_version = "2.0.0";
 // Get Nginx and PHP-FPM instance counts
 $nginx_instance_count = shell_exec("ps aux | grep -v grep | grep -c 'nginx: master'");
 
-$backend_url_status = "http://backend:5000/status";
+$backend_url_status = getenv('BACKEND_URL') ?: 'http://backend:5000/status';  // Fallback URL
 $api_token = "my-secret-token"; // Token aus der Datenbank
 
 $options = [
@@ -100,22 +100,19 @@ $data = json_decode($response, true);
     ?>
 
 <?php
-// Beispiel: $data['consul']['nodes'] und $data['consul']['services'] sind die aus dem Backend erhaltenen Daten.
-
-if (isset($data['consul']['nodes']) && is_array($data['consul']['nodes'])) {
+if (isset($data['consul']['nodes']) && is_array($data['consul']['nodes']) && count($data['consul']['nodes']) > 0) {
     echo '<h2 style="text-align: center;">Consul Nodes</h2>';
     echo '<table>';
     echo '<tr><th>Node</th><th>Address</th><th>Status</th><th>Tags</th></tr>';
 
     foreach ($data['consul']['nodes'] as $node) {
-        // Hier sicherstellen, dass der Schlüssel vorhanden ist, bevor wir auf ihn zugreifen
-        $node_id = isset($node['ID']) ? htmlspecialchars($node['ID']) : 'N/A';
+        $node_name = isset($node['Node']) ? htmlspecialchars($node['Node']) : 'N/A';
         $node_address = isset($node['Address']) ? htmlspecialchars($node['Address']) : 'N/A';
         $node_status = isset($node['Status']) ? htmlspecialchars($node['Status']) : 'N/A';
-        $node_tags = isset($node['Tags']) ? implode(', ', (array)$node['Tags']) : 'N/A';
+        $node_tags = isset($node['Tags']) ? implode(', ', $node['Tags']) : 'N/A';
 
         echo "<tr>";
-        echo "<td>" . $node_id . "</td>";
+        echo "<td>" . $node_name . "</td>";
         echo "<td>" . $node_address . "</td>";
         echo "<td>" . $node_status . "</td>";
         echo "<td>" . $node_tags . "</td>";
@@ -125,24 +122,40 @@ if (isset($data['consul']['nodes']) && is_array($data['consul']['nodes'])) {
 } else {
     echo "<p>No nodes found</p>";
 }
+?>
 
-if (isset($data['consul']['services']) && is_array($data['consul']['services'])) {
+<?php
+if (isset($data['consul']['services']) && is_array($data['consul']['services']) && count($data['consul']['services']) > 0) {
     echo '<h2 style="text-align: center;">Consul Services</h2>';
     echo '<table>';
     echo '<tr><th>Service</th><th>Tags</th></tr>';
 
-    foreach ($data['consul']['services'] as $service => $tags) {
-        // Stelle sicher, dass $tags ein Array ist
-        $tags_list = is_array($tags) ? implode(', ', $tags) : 'N/A';
+    foreach ($data['consul']['services'] as $service) {
+        $service_name = isset($service['Service']) ? htmlspecialchars($service['Service']) : 'N/A';
+        $service_tags = isset($service['Tags']) ? implode(', ', $service['Tags']) : 'N/A';
+
         echo "<tr>";
-        echo "<td>" . htmlspecialchars($service) . "</td>";
-        echo "<td>" . $tags_list . "</td>";
+        echo "<td>" . $service_name . "</td>";
+        echo "<td>" . $service_tags . "</td>";
         echo "</tr>";
     }
     echo '</table>';
 } else {
     echo "<p>No services found</p>";
 }
+?>
+
+
+
+
+<?php
+// Adding the data overview (to analyze the structure of $data)
+echo '<h2 style="text-align: center;">Raw Data Overview</h2>';
+echo '<div class="json-data">';
+echo '<pre>';
+print_r($data); // Print the raw $data array from the backend
+echo '</pre>';
+echo '</div>';
 ?>
 
 </body>

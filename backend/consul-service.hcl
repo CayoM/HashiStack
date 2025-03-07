@@ -1,6 +1,6 @@
 service {
   name = "backend"
-  id = "backend-service"
+  id = "backend"
   port = 5000
   tags = ["api", "backend"]
 }

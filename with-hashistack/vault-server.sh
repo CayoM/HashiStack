@@ -9,6 +9,7 @@ sleep 5
 
 # Enable PostgreSQL secrets engine
 vault secrets enable database
+sleep 5
 
 # Configure the PostgreSQL secrets engine (replace with your actual database credentials)
 vault write database/config/postgresql \
