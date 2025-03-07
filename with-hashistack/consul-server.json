@@ -1,0 +1,30 @@
+{
+    "node_name": "consul",
+    "server": true,
+    "bootstrap" : true,
+    "ui_config": {
+        "enabled" : true
+    },
+    "ports": {
+      "dns": 53
+    },
+    "log_level":"INFO",
+    "addresses": {
+        "http" : "0.0.0.0"
+    },
+    "service": {
+        "id": "dns",
+        "name": "dns",
+        "tags": ["primary"],
+        "address": "localhost",
+        "port": 53,
+        "enable_tag_override": false,
+        "check": {
+          "id": "dns",
+          "name": "Consul DNS TCP on port 53",
+          "tcp": "localhost:53",
+          "interval": "10s",
+          "timeout": "1s"
+        }
+    }
+}

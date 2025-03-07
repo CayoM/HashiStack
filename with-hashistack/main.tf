@@ -13,6 +13,10 @@ provider "docker" {
 
 resource "docker_network" "hashi_network" {
   name = "hashi"
+  driver = "bridge"
+  ipam_config {
+    subnet = "172.18.0.0/16" # Define the subnet for the network
+  }
 }
 
 resource "docker_image" "backend" {
@@ -43,7 +47,7 @@ resource "docker_container" "backend_container" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
-
+  dns = ["172.18.0.10"]
   env = [
     "CONSUL_NODE_NAME=backend-${count.index}",  # Unique node name for each instance
     "SECRETS_FILE=/shared-credentials/.env",
@@ -75,6 +79,8 @@ resource "docker_container" "frontend_container" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
+
+  dns = ["172.18.0.10"]
   env = [
     "BACKEND_URL=http://backend.service.consul:5000/status"
   ]
@@ -89,13 +95,14 @@ resource "docker_container" "database_container" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
-  # Umgebungsvariablen für PostgreSQL
+  #dns = ["127.0.0.1"]
+
   env = [
     "POSTGRES_DB=mydb",
     "POSTGRES_USER=backend_user",
     "POSTGRES_PASSWORD=securepassword"
   ]
-  # Volume mounten
+
   volumes {
     host_path      = "/workspaces/HashiStack/database/setup.sql"
     container_path = "/docker-entrypoint-initdb.d/init.sql"
@@ -126,6 +133,7 @@ resource "docker_container" "vault_server" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
+  #dns = ["127.0.0.1"]
 
   env = [
     "VAULT_DEV_ROOT_TOKEN_ID=hashistack-token",
@@ -154,6 +162,7 @@ resource "docker_container" "vault_client" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
+  #dns = ["127.0.0.1"]
 
   env = [
     "VAULT_TOKEN=hashistack-token",
@@ -202,14 +211,24 @@ resource "docker_container" "consul_server" {
     internal = 8600
     external = 8600
   }
-
+  ports {
+    internal = 53
+  }
   networks_advanced {
     name = docker_network.hashi_network.name
+    ipv4_address = "172.18.0.10"  # Assign the fixed IP here
+
   }
+  #dns = ["127.0.0.1"]
 
   env = [
     "CONSUL_BIND_INTERFACE=eth0"
   ]
+
+  volumes {
+    host_path      = "/workspaces/HashiStack/with-hashistack/server.json"
+    container_path = "/consul/config/server.json"
+  }
 }
 
 # Volumes to share credentials between containers

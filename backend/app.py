@@ -185,6 +185,11 @@ def get_consul_services():
         return []
 
 
+
+@app.route("/health")
+def health_check():
+    return "OK", 200
+
 @app.route('/status', methods=['GET'])
 def status():
     expected_token = get_api_token()
