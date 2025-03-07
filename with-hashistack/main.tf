@@ -47,7 +47,7 @@ resource "docker_container" "backend_container" {
   networks_advanced {
     name = docker_network.hashi_network.name
   }
-  dns = ["172.18.0.10"]
+  dns = ["172.18.0.10", "8.8.8.8"]
   env = [
     "CONSUL_NODE_NAME=backend-${count.index}",  # Unique node name for each instance
     "SECRETS_FILE=/shared-credentials/.env",
@@ -80,7 +80,7 @@ resource "docker_container" "frontend_container" {
     name = docker_network.hashi_network.name
   }
 
-  dns = ["172.18.0.10"]
+  dns = ["172.18.0.10", "8.8.8.8"]
   env = [
     "BACKEND_URL=http://backend.service.consul:5000/status"
   ]
