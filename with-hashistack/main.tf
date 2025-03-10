@@ -186,9 +186,10 @@ resource "docker_container" "consul_server" {
   name  = "consul"
   image = "consul:1.15"
   restart = "always"
+ # entrypoint = ["/custom-entrypoint.sh", "agent"]
 
   capabilities {
-    add = ["IPC_LOCK"]
+    add = ["IPC_LOCK", "NET_ADMIN"]
   }
 
   ports {
@@ -222,13 +223,18 @@ resource "docker_container" "consul_server" {
   #dns = ["127.0.0.1"]
 
   env = [
-    "CONSUL_BIND_INTERFACE=eth0"
+    "CONSUL_BIND_INTERFACE=eth0",
+    "CONSUL_ALLOW_PRIVILEGED_PORTS=yes"
   ]
 
   volumes {
-    host_path      = "/workspaces/HashiStack/with-hashistack/server.json"
+    host_path      = "/workspaces/HashiStack/with-hashistack/consul-server.json"
     container_path = "/consul/config/server.json"
   }
+#  volumes {
+ #   host_path      = "/workspaces/HashiStack/with-hashistack/consul-entrypoint.sh"
+  #  container_path = "/consul/config/server.json"
+  #}
 }
 
 # Volumes to share credentials between containers
