@@ -115,23 +115,19 @@ def check_db_status():
         }
 
 def parse_consul_nodes_output(output):
-    # Split the output into lines
     lines = output.splitlines()
 
-    # Skip the first line (header) and process the remaining lines
     nodes = []
     for line in lines[1:]:  # Skip the first line (header)
         parts = line.split()
-        if len(parts) >= 4:  # Ensure we have at least 4 parts (Node, ID, Address, DC)
+        if len(parts) >= 5:  # Ensure we have at least 5 parts (Node, Address, Status, DC, Tags)
             node = {
-                "Node": parts[0],   # Node ID
-                "ID": parts[1],     # Node's unique ID
-                "Address": parts[2],  # Node's IP address
-                "DC": parts[3],     # Data Center
-                "Status": "unknown",  # Default value for Status
-                "Tags": []            # Default to empty list for Tags
+                "Node": parts[0],       # Node name
+                "Address": parts[1],    # Node IP/Address
+                "Status": parts[2],     # Node status
+                "DC": parts[3],         # Data center
+                "Tags": parts[4:]       # Remaining parts as tags
             }
-            # You might need to modify the node parsing logic here to extract additional fields like 'Status' or 'Tags'
             nodes.append(node)
 
     return nodes
@@ -158,13 +154,14 @@ def parse_consul_services_output(output):
     services = []
 
     for line in lines:
-        service_info = line.strip()
+        service_info = line.strip().split()  # Split the line by spaces
         if service_info:
-            service_name = service_info.split()[0]  # Assuming the service is the first word in the line
-            tags = []  # Extract tags if available
+            service_name = service_info[0]  # First word is the service name
+            tags = service_info[1:]  # The rest are tags (if present)
+
             services.append({
                 "Service": service_name,
-                "Tags": tags
+                "Tags": tags  # Now includes actual tags
             })
     return services
 

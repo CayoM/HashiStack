@@ -67,10 +67,21 @@ $data = json_decode($response, true);
             <td><?php echo $nginx_version; ?></td>
             <td><?php echo $nginx_instance_count; ?></td>
         </tr>
+        <?php
+        // Count backend instances from Consul nodes
+        $backend_instance_count = 0;
+        if (isset($data['consul']['nodes']) && is_array($data['consul']['nodes'])) {
+            foreach ($data['consul']['nodes'] as $node) {
+                if (isset($node['Node']) && strpos($node['Node'], 'backend') === 0) {
+                    $backend_instance_count++;
+                }
+            }
+        }
+        ?>
         <tr>
             <td>BackEnd</td>
             <td><?php echo $data["server"] . "/" . $data["backend_version"]; ?></td>
-            <td><?php echo 1; ?></td>
+            <td><?php echo $backend_instance_count; ?></td>
         </tr>
         <tr>
             <td>Database</td>
@@ -132,7 +143,9 @@ if (isset($data['consul']['services']) && is_array($data['consul']['services']) 
 
     foreach ($data['consul']['services'] as $service) {
         $service_name = isset($service['Service']) ? htmlspecialchars($service['Service']) : 'N/A';
-        $service_tags = isset($service['Tags']) ? implode(', ', $service['Tags']) : 'N/A';
+        $service_tags = (isset($service['Tags']) && is_array($service['Tags']) && count($service['Tags']) > 0)
+        ? implode(', ', array_map('htmlspecialchars', $service['Tags']))
+        : 'No Tags';
 
         echo "<tr>";
         echo "<td>" . $service_name . "</td>";
@@ -154,6 +167,9 @@ echo '<h2 style="text-align: center;">Raw Data Overview</h2>';
 echo '<div class="json-data">';
 echo '<pre>';
 print_r($data); // Print the raw $data array from the backend
+echo '</pre>';
+echo '</pre>';
+print_r($data['consul']['services']);
 echo '</pre>';
 echo '</div>';
 ?>

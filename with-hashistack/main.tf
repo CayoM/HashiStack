@@ -29,7 +29,7 @@ resource "docker_image" "backend" {
 
 resource "docker_container" "backend_container" {
   count = 3
-
+  depends_on = [docker_container.consul_server]
   name  = "backend-${count.index}"  # This will create unique container names like "backend-0", "backend-1", etc.
   image = docker_image.backend.name
   ports {
@@ -82,7 +82,7 @@ resource "docker_container" "frontend_container" {
 
   dns = ["172.18.0.10", "8.8.8.8"]
   env = [
-    "BACKEND_URL=http://backend.service.consul:5000/status"
+    "BACKEND_URL=http://backend.service.consul:5000/f"
   ]
 }
 
