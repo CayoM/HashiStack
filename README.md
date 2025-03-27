@@ -9,48 +9,46 @@ In diesem Schritt wird die zuvor erstellte einfache Webserver-Applikation in ein
 2. **Backend:** Eine API in Python (Flask), die Anfragen verarbeitet und mit der Datenbank kommuniziert.
 3. **Datenbank:** Eine relationale Datenbank (PostgreSQL), die persistente Daten speichert.
 
-Zusätzlich werden **HashiCorp-Tools** integriert, um Infrastruktur und Service-Management zu automatisieren:
+Zusätzlich werden **HashiCorp-Tools** integriert, um Infrastruktur und Secrets-Management zu automatisieren:
 - **Terraform:** Automatisiert die Bereitstellung der Umgebung.
-- **Vault:** Verwalten von Geheimnissen (z. B. API-Keys, Datenbank-Zugangsdaten).
-- **Consul:** Service Discovery und Health Checks für die Anwendung.
-- **Nomad:** Orchestrierung der Anwendungskomponenten.
+- **Vault:** Verwalten von Geheimnissen (z. B. API-Keys, Datenbank-Zugangsdaten).
 
 ## Architektur
 ```
 +-------------+          +----------------+          +----------------+
-|  Frontend   | ----->  |    Backend     | ----->  |    Datenbank   |
-|  (Nginx+PHP)|         | (Flask API)    |         | (PostgreSQL)   |
+|  Frontend   | ----->   |    Backend     | ----->   |    Datenbank   |
+|  (Nginx+PHP)|          | (Flask API)    |          | (PostgreSQL)   |
 +-------------+          +----------------+          +----------------+
 ```
 
 Mit HashiCorp:
 ```
-+-------------+          +----------------+          +----------------+
++-------------+         +----------------+         +----------------+
 |  Frontend   | ----->  |    Backend     | ----->  |    Datenbank   |
 |  (Nginx+PHP)|         | (Flask API)    |         | (PostgreSQL)   |
-+-------------+          +----------------+          +----------------+
++-------------+         +----------------+         +----------------+
        |                        |                        |
        |                        |                        |
        v                        v                        v
-  +----------------+    +----------------+    +----------------+
-  | Consul        |    | Nomad         |    | Vault         |
-  +----------------+    +----------------+    +----------------+
+  +----------------+     +----------------+       +----------------+
+  |  Terraform     |     |   Terraform    |       |   Terraform    |
+  |                |     |  Vault-Agent   |       |     Vault      |
+  +----------------+     +----------------+       +----------------+
 ```
 
 ## Setup der Umgebung
 
 ### 1. Frontend (Nginx + PHP)
 - Ein **Nginx-Container** wird erstellt, der statische Dateien ausliefert und API-Anfragen an das Backend stellt.
-- PHP-Skript (`index.php`) ruft Daten vom Backend ab und zeigt sie dynamisch an.
-- Zeigt dynamische Informationen über die laufenden Komponenten an (z. B. Version, Instanzen).
+- Ein PHP-Skript (`index.php`) ruft Daten vom Backend ab und zeigt sie dynamisch an.
+- Zeigt Informationen über die laufenden Komponenten an (z. B. Version, Instanzen).
 
 ### 2. Backend (Flask API)
 - Eine einfache API in **Python (Flask)** verarbeitet Anfragen und gibt Daten zurück.
-- Endpunkt `/status` liefert:
-  - Server-Informationen (z. B. Hostname, IP-Adresse, Laufzeit)
-  - Anzahl der Backend-Instanzen
-- Registriert sich automatisch in **Consul** für Service Discovery.
-- Liest geheime Zugangsdaten aus **Vault** (z. B. DB-Passwort).
+- Der Endpunkt `/status` liefert:
+  - Server-Informationen (z. B. Hostname, IP-Adresse, Laufzeit)
+- Liest geheime Zugangsdaten aus **Vault** (z. B. API-Token).
+- Bei der Variante mit HashiCorp-Integration wird ein **Vault Agent** im Backend-Container verwendet, um automatisch ein Vault-Token zu erhalten und auf die geheimen Werte (z. B. API-Token in der Datenbank) zuzugreifen.
 
 ### 3. Datenbank (PostgreSQL)
 - **PostgreSQL** wird als persistente Datenbank eingesetzt.
@@ -60,27 +58,17 @@ Mit HashiCorp:
 ### 4. Integration von HashiCorp-Tools
 - **Terraform** automatisiert das Erstellen der Umgebung.
 - **Vault** schützt geheime Zugangsdaten.
-- **Consul** ermöglicht Service Discovery und Health Checks.
-- **Nomad** orchestriert die Container.
 
 ## Deployment mit Terraform
 
-Terraform wird verwendet, um die Infrastruktur für die 3-Tier-App bereitzustellen.
+Terraform wird verwendet, um die Infrastruktur für die 3-Tier-App bereitzustellen:
 
 ```bash
 terraform init
 terraform apply -auto-approve
 ```
 
-## Skalierung
-
-Nomad verwaltet die Skalierung des Backends und der Datenbank. Die Anzahl der Instanzen kann in **Nomad Jobs** definiert werden.
-
-```bash
-nomad run backend.nomad
-nomad run database.nomad
-```
-
 ## Fazit
-Diese Version der Anwendung ist nun **skalierbar**, **modular** und verwendet moderne DevOps-Methoden für eine flexible Bereitstellung. HashiCorp-Tools helfen bei der Automatisierung und Verwaltung der Infrastruktur.
 
+Diese Version der Anwendung ist nun **modular aufgebaut** und verwendet moderne **DevOps-Methoden** für eine flexible Bereitstellung.  
+Die HashiCorp-Tools unterstützen dabei die Automatisierung und sichere Verwaltung der Infrastruktur.
