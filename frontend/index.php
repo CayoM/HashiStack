@@ -70,12 +70,18 @@ $data = json_decode($response, true);
         <?php
         // Count backend instances from Consul nodes
         $backend_instance_count = 0;
+
         if (isset($data['consul']['nodes']) && is_array($data['consul']['nodes'])) {
             foreach ($data['consul']['nodes'] as $node) {
                 if (isset($node['Node']) && strpos($node['Node'], 'backend') === 0) {
                     $backend_instance_count++;
                 }
             }
+        }
+
+        // Wenn kein Consul verwendet wird oder keine Nodes vorhanden sind, setze die Instanzanzahl auf 1
+        if ($backend_instance_count === 0 && isset($data['server']) && isset($data['backend_version'])) {
+            $backend_instance_count = 1;
         }
         ?>
         <tr>
@@ -130,8 +136,6 @@ if (isset($data['consul']['nodes']) && is_array($data['consul']['nodes']) && cou
         echo "</tr>";
     }
     echo '</table>';
-} else {
-    echo "<p>No nodes found</p>";
 }
 ?>
 
@@ -153,25 +157,7 @@ if (isset($data['consul']['services']) && is_array($data['consul']['services']) 
         echo "</tr>";
     }
     echo '</table>';
-} else {
-    echo "<p>No services found</p>";
 }
-?>
-
-
-
-
-<?php
-// Adding the data overview (to analyze the structure of $data)
-echo '<h2 style="text-align: center;">Raw Data Overview</h2>';
-echo '<div class="json-data">';
-echo '<pre>';
-print_r($data); // Print the raw $data array from the backend
-echo '</pre>';
-echo '</pre>';
-print_r($data['consul']['services']);
-echo '</pre>';
-echo '</div>';
 ?>
 
 </body>
